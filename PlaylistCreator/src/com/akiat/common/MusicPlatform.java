@@ -22,6 +22,9 @@ import org.apache.oltu.oauth2.common.message.types.GrantType;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
+import com.akiat.exceptions.AuthException;
+import com.akiat.exceptions.RequestException;
+
 public abstract class MusicPlatform {
 	protected static Logger LOGGER = Logger.getLogger(MusicPlatform.class.getName());
 
@@ -36,7 +39,7 @@ public abstract class MusicPlatform {
 	protected OAuthClient m_client = null;
 
 	protected LinkedList<Playlist> m_playlists = new LinkedList<>();
-	
+
 	protected String m_accessToken = null;
 	protected String m_configFilePath = null;
 	protected MusicPlatformUser m_userInfos = null;
@@ -48,16 +51,25 @@ public abstract class MusicPlatform {
 	public MusicPlatform(String configFilePath) {
 		m_configFilePath = configFilePath;
 		m_client = new OAuthClient(new URLConnectionClient());
-	}	
+	}
 
 	/**
 	 * Load the platform, (get access token from config file or webservice and fill the user infos)
 	 */
-	protected void load()
+	protected void load() {
+		load(true);
+	}
+
+	/**
+	 * Load the platform, (get access token from config file or webservice and fill the user infos)
+	 */
+	protected void load(boolean loadTokenFromConfig)
 	{
+		if (loadTokenFromConfig)
+			m_accessToken = getProperty("AccessToken");
+
 		// If no access token was stored, load the oAuth2 process.
-		m_accessToken = getProperty("AccessToken");
-		if (m_accessToken == null) {
+		if (m_accessToken == null || !loadTokenFromConfig) {
 
 			String authUrl = getAuthUrl();
 			System.out.println("Please visit " + authUrl);
@@ -76,19 +88,30 @@ public abstract class MusicPlatform {
 		}
 
 		// In all case refresh user infos
-		m_userInfos = loadUserInfos(doRequest(USER_INFO_URL));
+		m_userInfos = loadUserInfos(doRequest(USER_INFO_URL, false));
+	}
+
+	/**
+	 * Call a url with the access token appended. No request retry if there is an error.
+	 * @param url The URL that you want to call.
+	 * @return The body of the response.
+	 */
+	protected String doRequest(String url) {
+		return doRequest(url, false);
 	}
 
 	/**
 	 * Call a url with the access token appended.
 	 * @param url The URL that you want to call.
+	 * @param allowRetry give true if you want to retry the request if it fails.
 	 * @return The body of the response.
 	 */
-	protected String doRequest(String url) {
+	protected String doRequest(String url, boolean allowRetry) {
 		// NOTE: Should be run on background thread
 		if (m_client != null)
 		{
 			OAuthResourceResponse response;
+			
 			try {
 				OAuthClientRequest bearerRequest = new OAuthBearerClientRequest(url)
 				.setAccessToken(m_accessToken)
@@ -96,18 +119,38 @@ public abstract class MusicPlatform {
 
 				response = m_client.resource(bearerRequest, OAuth.HttpMethod.GET, OAuthResourceResponse.class);
 
-				if (response.getResponseCode() != 200) {
-					throw new RuntimeException("Failed : HTTP error code : " + response.getResponseCode() + response.getBody());
+			} catch (OAuthSystemException | OAuthProblemException e) {
+				LOGGER.log(Level.SEVERE, "Authentication problem. ", e);
+				throw new AuthException("Authentication problem.", e);
+			}
+
+			if (response.getResponseCode() != 200) {
+				throw new RequestException("Failed : HTTP error code : " + response.getResponseCode() + response.getBody());
+			}
+
+			String body = response.getBody();
+			JSONObject obj = new JSONObject(body);
+
+			// If there is an error
+			if (obj != null && obj.has("error")) {
+
+				JSONObject error = obj.getJSONObject("error");
+
+				// Reload and retry the request only one time
+				if (allowRetry) {
+					load(false);
+					return doRequest(url, false);
+				} else {
+					String message = error.getString("message");
+					String type = error.getString("type");
+					int code = error.getInt("code");
+
+					throw new RequestException("Error : " + type + " (" + code + ") : " + message);
 				}
 
-				return response.getBody();
-
-			} catch (OAuthSystemException | OAuthProblemException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
 			}
+			return body;
 		}
-
 		return null;
 	}
 
@@ -126,6 +169,7 @@ public abstract class MusicPlatform {
 		}
 		catch (OAuthSystemException e) {
 			LOGGER.log(Level.SEVERE, "Exception loading oauth ", e);
+			throw new AuthException("Authentication problem.", e);
 		}
 
 		return request.getLocationUri();
@@ -137,6 +181,8 @@ public abstract class MusicPlatform {
 	 * @return Return the access token
 	 */
 	private String getAccessToken(final String authorizationCode) {
+		
+		String accessToken = null;
 		// Note: should be run on background thread
 		try {
 			OAuthClientRequest request = OAuthClientRequest
@@ -149,15 +195,14 @@ public abstract class MusicPlatform {
 					.buildBodyMessage();
 
 			GitHubTokenResponse oAuthResponse = m_client.accessToken(request, GitHubTokenResponse.class);
-			String accessToken = oAuthResponse.getAccessToken();
-			LOGGER.log(Level.INFO, "ACCESS TOKEN= " + accessToken);
-			return accessToken;
+			accessToken = oAuthResponse.getAccessToken();
 		}
 		catch (OAuthSystemException | OAuthProblemException e) {
 			LOGGER.log(Level.SEVERE, "Exception during get access token ", e);
+			throw new AuthException("Exception during get access token.", e);
 		}
 
-		return null;
+		return accessToken;
 	}
 
 
@@ -183,6 +228,7 @@ public abstract class MusicPlatform {
 					"' in property file '" + m_configFilePath + "'");
 		} catch (IOException e) {
 			LOGGER.log(Level.SEVERE, "Unable to write config file.");
+			throw new RuntimeException("Unable to write config file.", e);
 		}
 	}
 
@@ -202,6 +248,7 @@ public abstract class MusicPlatform {
 			configFile.close();
 		} catch (IOException e) {
 			LOGGER.log(Level.INFO, "Unable to load config file.");
+			throw new RuntimeException("Unable to load config file.", e);
 		}
 
 		LOGGER.log(Level.INFO, "Read '" + propertyName + "' in property file '" + m_configFilePath + "'");

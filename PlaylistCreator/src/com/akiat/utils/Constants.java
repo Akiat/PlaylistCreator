@@ -4,5 +4,6 @@ public class Constants {
 
 	public static enum Platform {
 		DEEZER,
+		ALL,
 	}
 }

@@ -2,6 +2,7 @@ package com.akiat;
 
 import java.io.File;
 import java.util.HashMap;
+import java.util.Map.Entry;
 import java.util.logging.Logger;
 
 import com.akiat.common.MusicPlatform;
@@ -52,5 +53,21 @@ public class Session {
 
 	public void setConfigFile(String configFile) {
 		m_configFile = configFile;
+	}
+
+	public void loadPlaylistsInfos(Platform platform) {
+		
+		if (platform == Platform.ALL) {
+			
+			for (Entry<Platform, MusicPlatform> entry : m_musicPlatformMap.entrySet()) {
+				entry.getValue().loadPlaylistsInfos();
+			}
+			
+		} else if (m_musicPlatformMap.containsKey(platform)) {
+			m_musicPlatformMap.get(platform).loadPlaylistsInfos();
+		}
+		
+		
+		
 	}
 }
