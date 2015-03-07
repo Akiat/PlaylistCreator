@@ -4,13 +4,16 @@ import java.util.LinkedList;
 
 import org.json.JSONObject;
 
+/**
+ * @author Akiat
+ *
+ */
 public abstract class Playlist {
 
 	/**
 	 * True if we have loaded the tracklist.
 	 */
-	protected boolean	m_isLoaded	= false;
-	protected LinkedList<Track> m_tracklist = new LinkedList<>();
+	protected LinkedList<Track> m_tracklist = null;
 	
 	protected String	m_id 		= null;
 	protected String 	m_title		= null;
@@ -30,11 +33,61 @@ public abstract class Playlist {
  
 	}
 	
-	protected abstract LinkedList<Track> getTracklist();
-
 	@Override
 	public String toString() {
-		return m_title + " " + m_link + " " + m_nbTracks;
+		return "PLAYLIST: " + m_title + " - NB TRACKS: " + m_nbTracks + " " + m_link;
+	}
+
+	public LinkedList<Track> getTracklist() {
+		return m_tracklist;
+	}
+
+	public String getId() {
+		return m_id;
+	}
+
+	public String getTitle() {
+		return m_title;
+	}
+
+	public String getLink() {
+		return m_link;
+	}
+
+	public String getPicture() {
+		return m_picture;
+	}
+
+	public String getTracklistLink() {
+		return m_tracklistLink;
+	}
+
+	public int getDuration() {
+		return m_duration;
+	}
+
+	public int getNbTracks() {
+		return m_nbTracks;
+	}
+
+	public boolean isPublic() {
+		return m_isPublic;
+	}
+
+	public boolean isCollaborative() {
+		return m_isCollaborative;
+	}
+
+	public String getOwnerId() {
+		return m_ownerId;
+	}
+
+	public String getOwnerName() {
+		return m_ownerName;
+	}
+
+	public void setTracklist(LinkedList<Track> tracklist) {
+		m_tracklist = tracklist;
 	}
 
 }

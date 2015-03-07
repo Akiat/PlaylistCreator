@@ -57,17 +57,14 @@ public class Session {
 
 	public void loadPlaylistsInfos(Platform platform) {
 		
+		// Load all playlists from all platforms
 		if (platform == Platform.ALL) {
-			
 			for (Entry<Platform, MusicPlatform> entry : m_musicPlatformMap.entrySet()) {
 				entry.getValue().loadPlaylistsInfos();
 			}
-			
+		// Load all playlist from a specific platform
 		} else if (m_musicPlatformMap.containsKey(platform)) {
 			m_musicPlatformMap.get(platform).loadPlaylistsInfos();
 		}
-		
-		
-		
 	}
 }

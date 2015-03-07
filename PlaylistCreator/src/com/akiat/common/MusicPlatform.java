@@ -3,6 +3,7 @@ package com.akiat.common;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.Properties;
 import java.util.Scanner;
@@ -38,21 +39,25 @@ public abstract class MusicPlatform {
 
 	protected OAuthClient m_client = null;
 
-	protected LinkedList<Playlist> m_playlists = new LinkedList<>();
+	protected HashMap<String, Playlist> m_playlists = new HashMap<>();
 
 	protected String m_accessToken = null;
 	protected String m_configFilePath = null;
 	protected MusicPlatformUser m_userInfos = null;
-
-	protected abstract MusicPlatformUser loadUserInfos(String userInfosJson);
-
-	public abstract void loadPlaylistsInfos();
 
 	public MusicPlatform(String configFilePath) {
 		m_configFilePath = configFilePath;
 		m_client = new OAuthClient(new URLConnectionClient());
 	}
 
+	// Abstract methods --------------- 
+	public abstract HashMap<String, Playlist> 	loadPlaylistsInfos();
+	public abstract LinkedList<Track> 			loadPlaylistsTracks();
+	public abstract LinkedList<Track> 			loadPlaylistTracks(String playlistID);
+
+	protected abstract MusicPlatformUser loadUserInfos(String userInfosJson);
+	// --------------------------------
+	
 	/**
 	 * Load the platform, (get access token from config file or webservice and fill the user infos)
 	 */
@@ -88,7 +93,7 @@ public abstract class MusicPlatform {
 		}
 
 		// In all case refresh user infos
-		m_userInfos = loadUserInfos(doRequest(USER_INFO_URL, false));
+		m_userInfos = loadUserInfos(doRequest(USER_INFO_URL, true));
 	}
 
 	/**
@@ -253,6 +258,10 @@ public abstract class MusicPlatform {
 
 		LOGGER.log(Level.INFO, "Read '" + propertyName + "' in property file '" + m_configFilePath + "'");
 		return properties.getProperty(propertyName, null);
+	}
+
+	public HashMap<String, Playlist> getPlaylists() {
+		return m_playlists;
 	}
 
 	//	private String addAccessTokenToURL(String url) {

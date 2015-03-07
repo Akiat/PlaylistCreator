@@ -2,6 +2,7 @@ package com.akiat.deezer;
 
 import java.util.LinkedList;
 
+import org.json.JSONArray;
 import org.json.JSONObject;
 
 import com.akiat.common.Playlist;
@@ -32,16 +33,24 @@ public class DeezerPlaylist extends Playlist {
 		}
 	}
 
-	@Override
-	protected LinkedList<Track> getTracklist() {
+	protected LinkedList<Track> fillTrackListFromJson(String trackListJson) {
 		
-		LinkedList<Track> tracklist = null;
-		if (m_isLoaded)
-			tracklist = m_tracklist;
-		else {
-			tracklist = null; //TODO: fill the tracklist
+		JSONArray tracklistArray = new JSONArray(trackListJson);
+
+		if (tracklistArray != null)
+		{
+			if (m_tracklist == null)
+				m_tracklist = new LinkedList<>();
+			
+			for (int i = 0; i < tracklistArray.length(); i++) {
+				
+				Track track = new DeezerTrack(tracklistArray.get(i).toString());
+				m_tracklist.add(track);
+			}
 		}
-		return null;
+		
+		return m_tracklist;
+		
 	}
 
 }
