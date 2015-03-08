@@ -51,9 +51,7 @@ public abstract class MusicPlatform {
 	}
 
 	// Abstract methods --------------- 
-	public abstract HashMap<String, Playlist> 	loadPlaylistsInfos();
-	public abstract LinkedList<Track> 			loadPlaylistsTracks();
-	public abstract LinkedList<Track> 			loadPlaylistTracks(String playlistID);
+	public abstract void 	loadPlaylistsInfos();
 
 	protected abstract MusicPlatformUser loadUserInfos(String userInfosJson);
 	// --------------------------------

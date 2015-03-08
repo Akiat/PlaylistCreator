@@ -37,7 +37,7 @@ public class Deezer extends MusicPlatform {
 	}
 
 	@Override
-	public HashMap<String, Playlist> loadPlaylistsInfos() {
+	public void loadPlaylistsInfos() {
 		String playlistsString = doRequest(PLAYLISTS_URL);
 
 		JSONObject obj = new JSONObject(playlistsString);
@@ -48,18 +48,21 @@ public class Deezer extends MusicPlatform {
 
 			for (int i = 0; i < playlists.length(); i++) {
 				Playlist playlist = new DeezerPlaylist(playlists.get(i).toString());
+				
 				m_playlists.put(playlist.getId(), playlist);
-
-				System.out.println(playlist.toString());
+				// Load tracks for the current playlist
+				playlist.setTracklist(loadPlaylistTracks((DeezerPlaylist)playlist));
 			}
 		}
-		return m_playlists;
 	}
 
-	@Override
-	public LinkedList<Track> loadPlaylistTracks(String playlistID) {
-
+	private LinkedList<Track> loadPlaylistTracks(String playlistID) {
 		DeezerPlaylist playlist = (DeezerPlaylist) m_playlists.get(playlistID);
+		return loadPlaylistTracks(playlist);
+	}
+	
+	private LinkedList<Track> loadPlaylistTracks(DeezerPlaylist playlist) {
+
 		LinkedList<Track> tracklist = null;
 
 		String tracklistLink = playlist.getTracklistLink();
@@ -74,52 +77,13 @@ public class Deezer extends MusicPlatform {
 
 				// If there is more tracks to retreive, fill tracklistLink with the next link
 				tracklistLink = null;
-				if (!trackList.isNull("next"))
+				if (trackList.has("next"))
 					tracklistLink = trackList.getString("next");
 
 				JSONArray tracklistArray = trackList.getJSONArray("data");
 				tracklist = playlist.fillTrackListFromJson(tracklistArray.toString());
 			}
 		}
-
-
 		return tracklist;
-
-
-		//			
-		//			JSONObject trackList = new JSONObject(trackListJson);
-		//			if (trackList != null)
-		//			{
-		//				while (tracklistLink)
-		//				tracklistLink = null;
-		//				if (!trackList.isNull("next"))
-		//					tracklistLink = trackList.getString("next");
-		//				
-		//				JSONArray tracklistArray = trackList.getJSONArray("data");
-		//				do {
-		//					
-		//				} while
-		//			}
-		//				JSONArray tracklistArray = trackList.getJSONArray("data");
-		//			
-		//			}
-		//			
-		//			String trackListJson = doRequest(playlist.getTracklistLink());
-		//			
-		//			tracklist = playlist.fillTrackListFromJson(trackListJson);
-		//			
-		//			JSONObject obj = new JSONObject(trackListJson);
-		//
-		//			if (obj != null)
-		//			{
-		//		}
-		//		
-		//		return tracklist;
-	}
-
-	@Override
-	public LinkedList<Track> loadPlaylistsTracks() {
-		// TODO Auto-generated method stub
-		return null;
 	}
 }

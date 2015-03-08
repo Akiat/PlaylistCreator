@@ -35,7 +35,12 @@ public abstract class Playlist {
 	
 	@Override
 	public String toString() {
-		return "PLAYLIST: " + m_title + " - NB TRACKS: " + m_nbTracks + " " + m_link;
+		StringBuilder str = new StringBuilder();
+		str.append("PLAYLIST: " + m_title + " - NB TRACKS: " + m_nbTracks + " " + m_link);
+		for (Track track : m_tracklist) {
+			str.append(track.toString());
+		}
+		return str.toString();
 	}
 
 	public LinkedList<Track> getTracklist() {

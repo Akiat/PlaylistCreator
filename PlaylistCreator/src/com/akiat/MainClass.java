@@ -1,5 +1,8 @@
 package com.akiat;
 
+import java.io.FileNotFoundException;
+import java.io.PrintWriter;
+import java.io.UnsupportedEncodingException;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.logging.Logger;
@@ -19,6 +22,8 @@ public class MainClass {
 	public static void main(String[] args) {
 		//SplashScreenTest gui = new SplashScreenTest();
 //		MainWindow gui = new MainWindow();
+
+		Local loc = new Local("F:\\Telechargements\\Musique");
 		
 		Session session = new Session("Akiat");
 		Deezer deezer = (Deezer) session.addMusicPlatform(Platform.DEEZER);
@@ -27,15 +32,30 @@ public class MainClass {
 		HashMap<String, Playlist> deezerPlaylists = deezer.getPlaylists();
 		
 		for (HashMap.Entry<String, Playlist> entry : deezerPlaylists.entrySet()) {
-			DeezerPlaylist play = (DeezerPlaylist) entry.getValue();
-			LinkedList<Track> trackList = deezer.loadPlaylistTracks(entry.getKey());
 			
-			System.out.println("PRINT TRACK OF PLAYLIST: " + entry.getValue());
+			DeezerPlaylist playlist = (DeezerPlaylist) entry.getValue();
+			LinkedList<String> localPlaylist = loc.makePlaylist(playlist);
 			
-			for (Track track : trackList) {
-				System.out.println(track.toString());
+//			StringBuilder str = new StringBuilder();
+//			for (String track : localPlaylist) {
+//				str.append(track + "\n");
+//			}
+//			
+			try {
+				PrintWriter writer;
+				writer = new PrintWriter(playlist.getTitle() + ".m3u", "UTF-8");
+				
+				writer.println("#PLAYLIST GENERATED FROM THIS ONE: " + playlist.getTitle() + " - " + playlist.getLink());
+				for (String track : localPlaylist) {
+					writer.println(track);
+				}
+
+				writer.close();
+			} catch (FileNotFoundException | UnsupportedEncodingException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
 			}
-		    break;
 		}
+//		
 	}
 }
