@@ -7,7 +7,7 @@ public class Album {
 	protected Artist m_artist;
 	protected String m_title;
 	protected String m_id;
-	protected String m_cover;
+	protected String m_coverLink;
 	protected String m_trackListLink;
 	
 	public Album(String albumJson, Artist artist) {
@@ -35,7 +35,7 @@ public class Album {
 	}
 
 	public String getCover() {
-		return m_cover;
+		return m_coverLink;
 	}
 
 	public String getTrackListLink() {

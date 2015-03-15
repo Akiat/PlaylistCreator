@@ -29,7 +29,7 @@ public class DeezerAlbum extends Album {
 			if (album.has("title"))
 				m_title = album.getString("title");
 			if (album.has("cover"))
-				m_cover = album.getString("cover");
+				m_coverLink = album.getString("cover");
 			if (album.has("tracklist"))
 				m_trackListLink = album.getString("tracklist");
 		}

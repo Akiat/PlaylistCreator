@@ -7,6 +7,7 @@ import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.logging.Logger;
 
+import com.akiat.common.Album;
 import com.akiat.common.Playlist;
 import com.akiat.common.Track;
 import com.akiat.deezer.Deezer;
@@ -23,7 +24,7 @@ public class MainClass {
 		//SplashScreenTest gui = new SplashScreenTest();
 //		MainWindow gui = new MainWindow();
 
-		Local loc = new Local("F:\\Telechargements\\Musique");
+		Local loc = new Local("F:\\Telechargements\\Musique\\Agnes Obel");
 		
 		Session session = new Session("Akiat");
 		Deezer deezer = (Deezer) session.addMusicPlatform(Platform.DEEZER);
@@ -34,7 +35,9 @@ public class MainClass {
 		for (HashMap.Entry<String, Playlist> entry : deezerPlaylists.entrySet()) {
 			
 			DeezerPlaylist playlist = (DeezerPlaylist) entry.getValue();
-			LinkedList<String> localPlaylist = loc.makePlaylist(playlist);
+			// Album / List of tracks not found for this album
+			HashMap<Album, LinkedList<Track>> notFoundTracks = new HashMap<>();
+			LinkedList<String> localPlaylist = loc.makePlaylist(playlist, notFoundTracks);
 			
 //			StringBuilder str = new StringBuilder();
 //			for (String track : localPlaylist) {
@@ -54,6 +57,14 @@ public class MainClass {
 			} catch (FileNotFoundException | UnsupportedEncodingException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
+			}
+			
+			for (HashMap.Entry<Album, LinkedList<Track>> notFounds : notFoundTracks.entrySet()) {
+				System.out.println("ALBUM NOT FOUND: " + notFounds.getKey().getTitle() + " ARTIST: " + notFounds.getKey().getArtist().getName());
+				System.out.println("Tracks from album: ");
+				for (Track t : notFounds.getValue()) {
+					System.out.println(t.getTitle());
+				}
 			}
 		}
 //		

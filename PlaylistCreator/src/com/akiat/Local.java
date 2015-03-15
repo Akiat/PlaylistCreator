@@ -18,6 +18,7 @@ import org.jaudiotagger.tag.FieldKey;
 import org.jaudiotagger.tag.Tag;
 import org.jaudiotagger.tag.TagException;
 
+import com.akiat.common.Album;
 import com.akiat.common.Playlist;
 import com.akiat.common.Track;
 
@@ -34,15 +35,30 @@ public class Local {
 		dumpAllTracks();
 	}
 	
-	public LinkedList<String> makePlaylist(Playlist playlist) {
+	/**
+	 * @param playlist the playlist that you want to convert to a local playlist
+	 * @param notFoundTracks a hashmap that will be filled by the method, which will contains albums that are not found and tracks that are not found for this album
+	 * @return a list of local filename
+	 */
+	public LinkedList<String> makePlaylist(Playlist playlist, HashMap<Album, LinkedList<Track>> notFoundTracks) {
+		notFoundTracks = new HashMap<>();
+
 		LinkedList<String> localPlaylist = new LinkedList<>();
-		
 		LinkedList<Track> trackList = playlist.getTracklist();
 		
 		for (Track track : trackList) {
 			String foundedTrack = getTrack(track.getArtist().getName(), track.getAlbum().getTitle(), track.getTitle());
 			if (foundedTrack != null)
 				localPlaylist.add(foundedTrack);
+			else {
+				//TODO: ce get ne marche pas (pas le meme album) faire le equals sur album tracks et artist
+				LinkedList<Track> tracks = notFoundTracks.get(track.getAlbum());
+				if (tracks == null) {
+					tracks = new LinkedList<>();
+					notFoundTracks.put(track.getAlbum(), tracks);
+				}
+				tracks.add(track);
+			}
 		}
 		
 		return localPlaylist;
