@@ -23,7 +23,43 @@ public class Track {
 	
 	}
 
+	@Override
+	public int hashCode() {
+		final int prime = 31;
+		int result = 1;
+		result = prime * result + ((m_album == null) ? 0 : m_album.hashCode());
+		result = prime * result
+				+ ((m_artist == null) ? 0 : m_artist.hashCode());
+		result = prime * result + ((m_title == null) ? 0 : m_title.hashCode());
+		return result;
+	}
 
+	@Override
+	public boolean equals(Object obj) {
+		if (this == obj)
+			return true;
+		if (obj == null)
+			return false;
+		if (!(obj instanceof Track))
+			return false;
+		Track other = (Track) obj;
+		if (m_album == null) {
+			if (other.m_album != null)
+				return false;
+		} else if (!m_album.equals(other.m_album))
+			return false;
+		if (m_artist == null) {
+			if (other.m_artist != null)
+				return false;
+		} else if (!m_artist.equals(other.m_artist))
+			return false;
+		if (m_title == null) {
+			if (other.m_title != null)
+				return false;
+		} else if (!m_title.equals(other.m_title))
+			return false;
+		return true;
+	}
 
 	public String getId() {
 		return m_id;

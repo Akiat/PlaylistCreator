@@ -251,7 +251,7 @@ public abstract class MusicPlatform {
 			configFile.close();
 		} catch (IOException e) {
 			LOGGER.log(Level.INFO, "Unable to load config file.");
-			throw new RuntimeException("Unable to load config file.", e);
+			//throw new RuntimeException("Unable to load config file.", e);
 		}
 
 		LOGGER.log(Level.INFO, "Read '" + propertyName + "' in property file '" + m_configFilePath + "'");

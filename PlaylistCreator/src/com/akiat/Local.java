@@ -25,7 +25,7 @@ import com.akiat.common.Track;
 public class Local {
 
 	String[] authorizedExtensions = { "mp3", "mp4", "flac", "ogg", "wma" };
-	
+
 	// Artist / AlbumList
 	HashMap<String, ArtistAlbums> m_albumByArtistMap = new HashMap<>();
 
@@ -34,18 +34,17 @@ public class Local {
 		loadLocalMusic(path);
 		dumpAllTracks();
 	}
-	
+
 	/**
 	 * @param playlist the playlist that you want to convert to a local playlist
 	 * @param notFoundTracks a hashmap that will be filled by the method, which will contains albums that are not found and tracks that are not found for this album
 	 * @return a list of local filename
 	 */
 	public LinkedList<String> makePlaylist(Playlist playlist, HashMap<Album, LinkedList<Track>> notFoundTracks) {
-		notFoundTracks = new HashMap<>();
 
 		LinkedList<String> localPlaylist = new LinkedList<>();
 		LinkedList<Track> trackList = playlist.getTracklist();
-		
+
 		for (Track track : trackList) {
 			String foundedTrack = getTrack(track.getArtist().getName(), track.getAlbum().getTitle(), track.getTitle());
 			if (foundedTrack != null)
@@ -60,22 +59,22 @@ public class Local {
 				tracks.add(track);
 			}
 		}
-		
+
 		return localPlaylist;
 	}
-	
+
 	public String getTrack(String artistName, String albumTitle, String trackTitle) {
-		
+
 		String path = null;
-		
+
 		ArtistAlbums artistAlbums =  m_albumByArtistMap.get(artistName);
 		if (artistAlbums != null) {
 			path = artistAlbums.getTrack(albumTitle, trackTitle);
 		}
-		
+
 		return path;
 	}
-	
+
 	public void dumpAllTracks() {
 		System.out.println("----------------- BEGIN DUMP ALL TRACKS -----------------------");
 		for (Entry<String, ArtistAlbums> artistAlbumsEntry : m_albumByArtistMap.entrySet()) {
@@ -87,7 +86,7 @@ public class Local {
 	}
 
 	private void addTrack(String artistName, String albumTitle, String trackTitle, String trackPath) {
-		
+
 		ArtistAlbums artistAlbums = m_albumByArtistMap.get(artistName);
 		if (artistAlbums == null)
 			artistAlbums = new ArtistAlbums(artistName);
@@ -95,36 +94,38 @@ public class Local {
 		artistAlbums.addTrack(trackTitle, trackPath, albumTitle);
 		m_albumByArtistMap.put(artistName, artistAlbums);
 	}
-	
-//	ArrayList allFiles, 
+
+	//	ArrayList allFiles, 
 	private void loadLocalMusic(String root) {
 		File f = new File(root);
 		File[] listFiles = f.listFiles();
 
-		for (int i = 0; i < listFiles.length; i++) {
-			if (listFiles[i].isDirectory()) 
-				loadLocalMusic(listFiles[i].toString());
-			else {
-				File actualFile = listFiles[i];
+		if (listFiles != null) {
+			for (int i = 0; i < listFiles.length; i++) {
+				if (listFiles[i].isDirectory()) 
+					loadLocalMusic(listFiles[i].toString());
+				else {
+					File actualFile = listFiles[i];
 
-				String ext = FilenameUtils.getExtension(actualFile.getPath());
-				if (Arrays.asList(authorizedExtensions).contains(ext)) {
+					String ext = FilenameUtils.getExtension(actualFile.getPath());
+					if (Arrays.asList(authorizedExtensions).contains(ext)) {
 
-					//----- JAUDIO Tagger
-					AudioFile audioFile;
-					try {
-						audioFile = AudioFileIO.read(actualFile);
-						Tag tag = audioFile.getTag();
-						String artistName = tag.getFirst(FieldKey.ARTIST);
-						String albumTitle = tag.getFirst(FieldKey.ALBUM);
-						String trackTitle = tag.getFirst(FieldKey.TITLE);
+						//----- JAUDIO Tagger
+						AudioFile audioFile;
+						try {
+							audioFile = AudioFileIO.read(actualFile);
+							Tag tag = audioFile.getTag();
+							String artistName = tag.getFirst(FieldKey.ARTIST);
+							String albumTitle = tag.getFirst(FieldKey.ALBUM);
+							String trackTitle = tag.getFirst(FieldKey.TITLE);
 
-						addTrack(artistName, albumTitle, trackTitle, actualFile.getPath());
-						//System.out.println("JAudioTagger: " + trackTitle + " " + artistName + " " + albumTitle);
-						//---------------
+							addTrack(artistName, albumTitle, trackTitle, actualFile.getPath());
+							//System.out.println("JAudioTagger: " + trackTitle + " " + artistName + " " + albumTitle);
+							//---------------
 
-					} catch (CannotReadException | IOException | ReadOnlyFileException | TagException | InvalidAudioFrameException e) {
-						e.printStackTrace();
+						} catch (CannotReadException | IOException | ReadOnlyFileException | TagException | InvalidAudioFrameException e) {
+							e.printStackTrace();
+						}
 					}
 				}
 			}
