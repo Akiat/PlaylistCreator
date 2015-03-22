@@ -12,7 +12,7 @@ import com.akiat.common.Playlist;
 import com.akiat.common.Track;
 import com.akiat.deezer.Deezer;
 import com.akiat.deezer.DeezerPlaylist;
-import com.akiat.gui.MainWindow;
+import com.akiat.gui.MainWindowOld;
 import com.akiat.gui.SplashScreenTest;
 import com.akiat.utils.Constants.Platform;
 
